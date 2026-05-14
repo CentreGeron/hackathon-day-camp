@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hackathon Day Camp</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- NAV BAR -->
+  <nav class="navbar">
+    <button class="nav-btn nav-active" data-screen="setup" onclick="showScreen('setup')"><span class="material-symbols-rounded">settings</span> Настройка</button>
+    <button class="nav-btn" data-screen="roulette" onclick="showScreen('roulette')"><span class="material-symbols-rounded">casino</span> Рулетка</button>
+    <button class="nav-btn" data-screen="dashboard" onclick="showScreen('dashboard')"><span class="material-symbols-rounded">emoji_events</span> Команды</button>
+    <button class="nav-btn" data-screen="timer" onclick="showScreen('timer')"><span class="material-symbols-rounded">timer</span> Таймер</button>
+    <div class="nav-timer-badge" id="navTimerBadge" onclick="showScreen('timer')"></div>
+  </nav>
+
+  <!-- SCREEN: SETUP -->
+  <section id="screen-setup" class="screen active">
+    <div class="screen-title"><span class="material-symbols-rounded">settings</span> Настройка</div>
+
+    <!-- Step indicators -->
+    <div class="wizard-steps">
+      <div class="wizard-step active" data-step="1">
+        <div class="wizard-step-number">1</div>
+        <div class="wizard-step-label">Ученики</div>
+      </div>
+      <div class="wizard-step-line"></div>
+      <div class="wizard-step" data-step="2">
+        <div class="wizard-step-number">2</div>
+        <div class="wizard-step-label">Команды</div>
+      </div>
+      <div class="wizard-step-line"></div>
+      <div class="wizard-step" data-step="3">
+        <div class="wizard-step-number">3</div>
+        <div class="wizard-step-label">Критерии</div>
+      </div>
+    </div>
+
+    <!-- Step 1: Students -->
+    <div class="wizard-panel" id="wizardStep1">
+      <div class="wizard-panel-title"><span class="material-symbols-rounded">school</span> Добавьте учеников</div>
+      <div class="wizard-panel-content" style="max-width:600px;margin:0 auto;">
+        <div>
+          <label class="field-label">Имена учеников (по одному на строку) <span class="input-counter" id="inputCounter"></span></label>
+          <textarea class="textarea" id="studentsInput" rows="7" placeholder="Алиса&#10;Борис&#10;Вика&#10;..." oninput="updateInputCounter()"></textarea>
+        </div>
+        <button class="btn btn-secondary" onclick="addStudents()" style="width:100%;justify-content:center;"><span class="material-symbols-rounded">person_add</span> Добавить учеников</button>
+        <div>
+          <label class="field-label">Добавленные ученики <span class="input-counter" id="totalStudentCount"></span></label>
+          <div class="student-pool" id="studentPool"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2: Teams -->
+    <div class="wizard-panel" id="wizardStep2" style="display:none;">
+      <div class="wizard-panel-title"><span class="material-symbols-rounded">groups</span> Распределите по командам</div>
+      <div class="wizard-panel-content" style="max-width:900px;margin:0 auto;">
+        <div style="display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;margin-bottom:20px;">
+          <span class="field-label" style="margin:0;">Количество команд:</span>
+          <div class="team-count-selector" id="teamCountSelector"></div>
+          <button class="btn btn-primary btn-sm" onclick="autoDistribute()"><span class="material-symbols-rounded">shuffle</span> Авто-распределение</button>
+        </div>
+        <div>
+          <label class="field-label">Нераспределённые ученики <span style="font-weight:400;color:var(--text-secondary);">(перетащите или кликните)</span></label>
+          <div class="student-pool" id="studentPoolStep2"></div>
+        </div>
+        <div class="teams-grid" id="teamsGrid"></div>
+      </div>
+    </div>
+
+    <!-- Step 3: Criteria -->
+    <div class="wizard-panel" id="wizardStep3" style="display:none;">
+      <div class="wizard-panel-title"><span class="material-symbols-rounded">tune</span> Настройте критерии</div>
+      <div class="wizard-panel-content" style="max-width:700px;margin:0 auto;">
+        <p style="text-align:center;color:var(--text-secondary);margin-bottom:20px;">Здесь можно изменить варианты для рулетки. Значения через запятую.</p>
+        <div id="criteriaEditorBody"></div>
+      </div>
+    </div>
+
+    <!-- Wizard navigation -->
+    <div class="wizard-nav">
+      <button class="btn btn-ghost" id="wizardPrevBtn" onclick="wizardPrev()" style="visibility:hidden;"><span class="material-symbols-rounded">arrow_back</span> Назад</button>
+      <button class="btn btn-danger btn-sm" onclick="resetAll()"><span class="material-symbols-rounded">delete</span> Сброс</button>
+      <button class="btn btn-primary" id="wizardNextBtn" onclick="wizardNext()">Далее ➡️</button>
+    </div>
+  </section>
+
+  <!-- SCREEN: ROULETTE -->
+  <section id="screen-roulette" class="screen">
+    <div class="screen-title"><span class="material-symbols-rounded">casino</span> Рулетка критериев</div>
+    <div id="rouletteContent"></div>
+  </section>
+
+  <!-- SCREEN: DASHBOARD -->
+  <section id="screen-dashboard" class="screen">
+    <div class="screen-title"><span class="material-symbols-rounded">emoji_events</span> Команды и результаты</div>
+    <div id="dashboardContent"></div>
+  </section>
+
+  <!-- SCREEN: TIMER -->
+  <section id="screen-timer" class="screen">
+    <div class="timer-container" id="timerContainer">
+      <div class="timer-display green" id="timerDisplay">60:00</div>
+      <div class="timer-setup" id="timerSetup">
+        <button class="timer-adj-btn" onclick="adjustTimer(-5)">−5</button>
+        <button class="timer-adj-btn" onclick="adjustTimer(-1)">−1</button>
+        <div class="timer-setup-label" id="timerSetupLabel">60 мин</div>
+        <button class="timer-adj-btn" onclick="adjustTimer(1)">+1</button>
+        <button class="timer-adj-btn" onclick="adjustTimer(5)">+5</button>
+      </div>
+      <div class="timer-controls">
+        <button class="btn btn-primary" id="timerStartBtn" onclick="startTimer()"><span class="material-symbols-rounded">play_arrow</span> Старт</button>
+        <button class="btn btn-ghost" id="timerPauseBtn" onclick="pauseTimer()" style="display:none;"><span class="material-symbols-rounded">pause</span> Пауза</button>
+        <button class="btn btn-danger" id="timerResetBtn" onclick="resetTimer()"><span class="material-symbols-rounded">restart_alt</span> Сброс</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRESENTATION OVERLAY -->
+  <div class="presentation-overlay" id="presentationOverlay">
+    <button class="presentation-close" onclick="closePresentation()">✕</button>
+    <div id="presentationContent"></div>
+  </div>
+
+  <!-- CONFIRM MODAL -->
+  <div class="modal-overlay" id="confirmModal">
+    <div class="modal-card">
+      <div class="modal-icon"><span class="material-symbols-rounded">help</span></div>
+      <div class="modal-message" id="confirmMessage"></div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="confirmCancelBtn">Отмена</button>
+        <button class="btn btn-danger" id="confirmOkBtn">Да</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST CONTAINER -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
