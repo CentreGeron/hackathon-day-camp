@@ -4,7 +4,6 @@
   "description": "Приложение для проведения Hackathon Day в IT-лагере",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "build": "echo 'Static project'"
+    "start": "node server.js"
   }
 }
